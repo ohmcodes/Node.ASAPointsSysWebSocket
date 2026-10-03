@@ -1,0 +1,26 @@
+{
+  "name": "node.asapointssyswebsocketdev",
+  "version": "1.0.0",
+  "description": "Points System for ARK Ascended Mods with Websocket",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ohmcodes/Node.ASAPointsSysWebSocketDev.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ohmcodes/Node.ASAPointsSysWebSocketDev/issues"
+  },
+  "homepage": "https://github.com/ohmcodes/Node.ASAPointsSysWebSocketDev#readme",
+  "dependencies": {
+    "dotenv": "^18.0.5",
+    "mysql2": "^3.24.5",
+    "ws": "^8.22.0"
+  }
+}
