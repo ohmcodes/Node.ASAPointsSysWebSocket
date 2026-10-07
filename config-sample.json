@@ -1,0 +1,35 @@
+{
+  "websocket": {
+    "host": "127.0.0.1",
+    "port": 8080,
+    "tokenHeader": "x-auth-token",
+    "authToken": "CHANGE_ME_TO_A_LONG_RANDOM_SECRET"
+  },
+
+  "mysql": {
+    "host": "localhost",
+    "port": 3306,
+    "user": "db_user",
+    "password": "db_password",
+    "database": "db_schema",
+    "connectionLimit": 10
+  },
+
+  "playersTable": {
+    "name": "Players",
+    "idColumn": "EOS_Id",
+    "permissionsColumn": "PermissionGroups"
+  },
+
+  "arkShopPlayersTable": {
+    "name": "ArkShopPlayers",
+    "idColumn": "EosId",
+    "pointsColumn": "Points"
+  },
+
+  "permissionPoints": {
+    "Admins": 100,
+    "Registered": 20,
+    "Default": 0
+  }
+}
