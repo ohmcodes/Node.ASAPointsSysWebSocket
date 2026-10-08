@@ -144,6 +144,34 @@ async function awardPoints(eosId) {
 }
 
 // ---------------------------------------------------------------------------
+// Core: get current points for a given EOS_ID
+// ---------------------------------------------------------------------------
+async function getPoints(eosId) {
+  const conn = await pool.getConnection();
+  try {
+    const [rows] = await conn.execute(
+      `SELECT \`${arkTbl.pointsColumn}\` AS Points
+       FROM \`${arkTbl.name}\`
+       WHERE \`${arkTbl.idColumn}\` = ?
+       LIMIT 1`,
+      [eosId]
+    );
+
+    if (!rows.length) {
+      return { ok: false, reason: 'arkshop_player_not_found', eosId };
+    }
+
+    return {
+      ok: true,
+      eosId,
+      points: Number(rows[0].Points) || 0
+    };
+  } finally {
+    conn.release();
+  }
+}
+
+// ---------------------------------------------------------------------------
 // HTTP + WebSocket
 // ---------------------------------------------------------------------------
 const httpServer = http.createServer((req, res) => {
@@ -184,19 +212,50 @@ wss.on('connection', (ws, req) => {
 
   ws.on('message', (raw) => {
     queue = queue.then(async () => {
-      const eosId = raw.toString('utf8').trim();
+      // Parse JSON payload
+      let payload;
+      try {
+        payload = JSON.parse(raw.toString('utf8'));
+      } catch {
+        ws.send(JSON.stringify({ ok: false, reason: 'invalid_json' }));
+        return;
+      }
+
+      const type = String(payload.Type || '').trim();
+      const eosId = String(payload.EOSID || '').trim();
 
       if (!eosId) {
-        ws.send(JSON.stringify({ ok: false, reason: 'empty_message' }));
+        ws.send(JSON.stringify({ ok: false, reason: 'missing_eos_id' }));
         return;
       }
 
       try {
-        const result = await awardPoints(eosId);
-        ws.send(JSON.stringify(result));
-        console.log(`[AWARD] ${eosId} ->`, result);
+        switch (type) {
+          case 'Reward': {
+            const result = await awardPoints(eosId);
+            ws.send(JSON.stringify(result));
+            console.log(`[REWARD] ${eosId} ->`, result);
+            break;
+          }
+
+          case 'CheckPoints': {
+            const result = await getPoints(eosId);
+            ws.send(JSON.stringify(result));
+            console.log(`[CHECK] ${eosId} ->`, result);
+            break;
+          }
+
+          default: {
+            ws.send(JSON.stringify({
+              ok: false,
+              reason: 'unknown_type',
+              type
+            }));
+            console.warn(`[WS] Unknown type "${type}" from ${ip}`);
+          }
+        }
       } catch (err) {
-        console.error('[ERROR] awardPoints:', err);
+        console.error('[ERROR] handler:', err);
         ws.send(JSON.stringify({ ok: false, reason: 'server_error' }));
       }
     }).catch(err => console.error('[ERROR] queue:', err));
